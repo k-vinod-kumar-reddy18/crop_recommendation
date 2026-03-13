@@ -4,34 +4,51 @@ import numpy as np
 import requests
 import os
 
-# Load model safely
+# -------------------------------
+# Load Model Safely
+# -------------------------------
 base_path = os.path.dirname(__file__)
 
-model = pickle.load(open(os.path.join(base_path,"crop_model.pkl"),"rb"))
-le = pickle.load(open(os.path.join(base_path,"label_encoder.pkl"),"rb"))
+model = pickle.load(open(os.path.join(base_path, "crop_model.pkl"), "rb"))
+le = pickle.load(open(os.path.join(base_path, "label_encoder.pkl"), "rb"))
 
-# Weather API key
+# -------------------------------
+# Weather API Key
+# -------------------------------
 API_KEY = "2c2ca48639eae93976f875415133b376"
 
-# Weather function
+# -------------------------------
+# Weather Function (Safe)
+# -------------------------------
 def get_weather(city):
 
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
 
-    response = requests.get(url)
-    data = response.json()
+    try:
+        response = requests.get(url)
+        data = response.json()
 
-    temperature = data["main"]["temp"]
-    humidity = data["main"]["humidity"]
+        if response.status_code != 200 or "main" not in data:
+            st.error("Weather data not found. Check city name or API key.")
+            return None, None, None
 
-    rainfall = 0
-    if "rain" in data:
-        rainfall = data["rain"].get("1h",0)
+        temperature = data["main"]["temp"]
+        humidity = data["main"]["humidity"]
 
-    return temperature, humidity, rainfall
+        rainfall = 0
+        if "rain" in data:
+            rainfall = data["rain"].get("1h", 0)
+
+        return temperature, humidity, rainfall
+
+    except:
+        st.error("Unable to fetch weather data.")
+        return None, None, None
 
 
-# Multilanguage dictionary
+# -------------------------------
+# Multi Language Support
+# -------------------------------
 translations = {
 
 "English":{
@@ -102,7 +119,9 @@ translations = {
 
 }
 
-# Language selection
+# -------------------------------
+# Language Selection
+# -------------------------------
 language = st.sidebar.selectbox(
 "🌍 Select Language",
 ["English","Telugu","Hindi","Kannada","Tamil","Malayalam"]
@@ -110,21 +129,23 @@ language = st.sidebar.selectbox(
 
 t = translations[language]
 
-# Title
+# -------------------------------
+# UI
+# -------------------------------
 st.title(t["title"])
 
-# City
 city = st.text_input(t["city"])
 
 st.subheader("Soil Parameters")
 
-# Inputs
 N = st.number_input(t["N"], min_value=0.0)
 P = st.number_input(t["P"], min_value=0.0)
 K = st.number_input(t["K"], min_value=0.0)
 ph = st.number_input(t["ph"], min_value=0.0)
 
+# -------------------------------
 # Prediction
+# -------------------------------
 if st.button(t["button"]):
 
     if city == "":
@@ -134,7 +155,10 @@ if st.button(t["button"]):
 
         temperature, humidity, rainfall = get_weather(city)
 
-        features = np.array([[N,P,K,temperature,humidity,ph,rainfall]])
+        if temperature is None:
+            st.stop()
+
+        features = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
 
         prediction = model.predict(features)
 
