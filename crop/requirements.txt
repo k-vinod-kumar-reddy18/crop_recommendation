@@ -1,7 +1,0 @@
-streamlit
-numpy
-pandas
-matplotlib
-xgboost
-scikit-learn
-requests
