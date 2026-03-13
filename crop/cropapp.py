@@ -5,8 +5,8 @@ import requests
 import os
 
 # Load XGBoost trained model safely
-model_path = os.path.join(os.path.dirname(__file__), "crop_model.pkl")
-model = pickle.load(open(model/crop_model.pkl, "rb"))
+model_path = os.path.join(os.path.dirname(__file__), "model", "crop_model.pkl")
+model = pickle.load(open(model_path, "rb"))
 
 # Weather API key
 API_KEY = "YOUR_OPENWEATHER_API_KEY"
