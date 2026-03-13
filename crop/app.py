@@ -4,12 +4,16 @@ import numpy as np
 import requests
 import os
 
-# Load model
+# Load model safely
 model_path = os.path.join(os.path.dirname(__file__), "crop_model.pkl")
-model = pickle.load(open(model_path, "rb"))
+
+with open(model_path, "rb") as f:
+    model = pickle.load(f)
 
 # Weather API key
 API_KEY = "YOUR_OPENWEATHER_API_KEY"
+
+st.title("🌱 Intelligent Crop Recommendation System")
 
 # Weather function
 def get_weather(city):
