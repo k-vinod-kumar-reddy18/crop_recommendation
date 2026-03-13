@@ -9,8 +9,8 @@ import os
 # -------------------------------
 base_path = os.path.dirname(__file__)
 
-model = pickle.load(open(os.path.join(base_path,"crop_model.pkl"),"rb"))
-le = pickle.load(open(os.path.join(base_path,"label_encoder.pkl"),"rb"))
+model = pickle.load(open(os.path.join(base_path, "crop_model.pkl"), "rb"))
+le = pickle.load(open(os.path.join(base_path, "label_encoder.pkl"), "rb"))
 
 # -------------------------------
 # Weather Function (Open-Meteo)
@@ -18,7 +18,7 @@ le = pickle.load(open(os.path.join(base_path,"label_encoder.pkl"),"rb"))
 def get_weather(city):
 
     try:
-        # Step 1: Get city coordinates
+        # Get city coordinates
         geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
         geo_data = requests.get(geo_url).json()
 
@@ -29,13 +29,12 @@ def get_weather(city):
         lat = geo_data["results"][0]["latitude"]
         lon = geo_data["results"][0]["longitude"]
 
-        # Step 2: Get weather
+        # Get weather
         weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=relativehumidity_2m"
 
         weather_data = requests.get(weather_url).json()
 
         temperature = weather_data["current_weather"]["temperature"]
-
         humidity = weather_data["hourly"]["relativehumidity_2m"][0]
 
         rainfall = 0
@@ -139,10 +138,11 @@ city = st.text_input(t["city"])
 
 st.subheader("Soil Parameters")
 
-N = st.number_input(t["N"], min_value=0.0)
-P = st.number_input(t["P"], min_value=0.0)
-K = st.number_input(t["K"], min_value=0.0)
-ph = st.number_input(t["ph"], min_value=0.0)
+# Dataset-based input ranges
+N = st.number_input(t["N"], min_value=0.0, max_value=140.0, value=90.0)
+P = st.number_input(t["P"], min_value=0.0, max_value=145.0, value=42.0)
+K = st.number_input(t["K"], min_value=0.0, max_value=205.0, value=43.0)
+ph = st.number_input(t["ph"], min_value=3.5, max_value=9.5, value=6.5)
 
 # -------------------------------
 # Prediction
@@ -158,6 +158,9 @@ if st.button(t["button"]):
 
         if temperature is None:
             st.stop()
+
+        # Show features for debugging
+        st.write("Input Features:", N, P, K, temperature, humidity, ph, rainfall)
 
         features = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
 
