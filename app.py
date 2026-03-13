@@ -15,7 +15,7 @@ le = pickle.load(open(os.path.join(base_path, "label_encoder.pkl"), "rb"))
 # -------------------------------
 # Weather API Key
 # -------------------------------
-API_KEY = "2c2ca48639eae93976f875415133b376"
+API_KEY = "e96a5a5dd58dda99a62ffdf49ab98611"
 
 # -------------------------------
 # Weather Function (Safe)
