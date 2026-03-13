@@ -4,14 +4,14 @@ import numpy as np
 import requests
 import os
 
-# Load XGBoost trained model safely
+# Load model
 model_path = os.path.join(os.path.dirname(__file__), "crop_model.pkl")
 model = pickle.load(open(model_path, "rb"))
 
 # Weather API key
 API_KEY = "YOUR_OPENWEATHER_API_KEY"
 
-# Function to fetch weather data
+# Weather function
 def get_weather(city):
 
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
@@ -29,7 +29,7 @@ def get_weather(city):
     return temperature, humidity, rainfall
 
 
-# Multilanguage dictionary
+# Language dictionary
 translations = {
 
 "English":{
@@ -100,7 +100,7 @@ translations = {
 
 }
 
-# Language selection
+# Language selector
 language = st.sidebar.selectbox(
 "🌍 Select Language",
 ["English","Telugu","Hindi","Kannada","Tamil","Malayalam"]
@@ -116,13 +116,11 @@ city = st.text_input(t["city"])
 
 st.subheader("Soil Parameters")
 
-# Soil inputs
 N = st.number_input(t["N"], min_value=0.0)
 P = st.number_input(t["P"], min_value=0.0)
 K = st.number_input(t["K"], min_value=0.0)
 ph = st.number_input(t["ph"], min_value=0.0)
 
-# Prediction
 if st.button(t["button"]):
 
     if city == "":
@@ -141,3 +139,10 @@ if st.button(t["button"]):
         st.write("🌡 Temperature:", temperature)
         st.write("💧 Humidity:", humidity)
         st.write("🌧 Rainfall:", rainfall)
+
+
+
+
+
+
+
