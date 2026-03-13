@@ -5,49 +5,50 @@ import requests
 import os
 
 # -------------------------------
-# Load Model Safely
+# Load ML Model
 # -------------------------------
 base_path = os.path.dirname(__file__)
 
-model = pickle.load(open(os.path.join(base_path, "crop_model.pkl"), "rb"))
-le = pickle.load(open(os.path.join(base_path, "label_encoder.pkl"), "rb"))
+model = pickle.load(open(os.path.join(base_path,"crop_model.pkl"),"rb"))
+le = pickle.load(open(os.path.join(base_path,"label_encoder.pkl"),"rb"))
 
 # -------------------------------
-# Weather API Key
-# -------------------------------
-API_KEY = "e96a5a5dd58dda99a62ffdf49ab98611"
-
-# -------------------------------
-# Weather Function (Safe)
+# Weather Function (Open-Meteo)
 # -------------------------------
 def get_weather(city):
 
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
-
     try:
-        response = requests.get(url)
-        data = response.json()
+        # Step 1: Get city coordinates
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
+        geo_data = requests.get(geo_url).json()
 
-        if response.status_code != 200 or "main" not in data:
-            st.error("Weather data not found. Check city name or API key.")
+        if "results" not in geo_data:
+            st.error("City not found")
             return None, None, None
 
-        temperature = data["main"]["temp"]
-        humidity = data["main"]["humidity"]
+        lat = geo_data["results"][0]["latitude"]
+        lon = geo_data["results"][0]["longitude"]
+
+        # Step 2: Get weather
+        weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=relativehumidity_2m"
+
+        weather_data = requests.get(weather_url).json()
+
+        temperature = weather_data["current_weather"]["temperature"]
+
+        humidity = weather_data["hourly"]["relativehumidity_2m"][0]
 
         rainfall = 0
-        if "rain" in data:
-            rainfall = data["rain"].get("1h", 0)
 
         return temperature, humidity, rainfall
 
     except:
-        st.error("Unable to fetch weather data.")
+        st.error("Weather service unavailable")
         return None, None, None
 
 
 # -------------------------------
-# Multi Language Support
+# Multi-language Text
 # -------------------------------
 translations = {
 
@@ -120,7 +121,7 @@ translations = {
 }
 
 # -------------------------------
-# Language Selection
+# Sidebar Language Selection
 # -------------------------------
 language = st.sidebar.selectbox(
 "🌍 Select Language",
